@@ -1,0 +1,1 @@
+kubeadm join 10.0.1.71:6443 --token bsjlop.l9an15nvjid6txlr --discovery-token-ca-cert-hash sha256:e1520aa973a570ca1bfca2c109b45b8252978d4e13898e6bbbdca3e12a9762de

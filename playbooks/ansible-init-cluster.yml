@@ -1,0 +1,80 @@
+- name: Initialize k8s cluster
+  hosts: kube_server
+  become: true
+  remote_user: ubuntu
+
+  vars_files:
+    - ansible-vars.yml
+
+  tasks:
+    - name: Set docker to use systemd cgroups driver
+      ansible.builtin.copy:
+        mode: 0644
+        dest: "/etc/docker/daemon.json"
+        content: |
+          {
+            "exec-opts": ["native.cgroupdriver=systemd"]
+          }
+    - name: Restart docker
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+    - name: Initialize Kubernetes cluster
+      ansible.builtin.command: "kubeadm init --pod-network-cidr {{ pod_cidr }}"
+      args:
+        creates: /etc/kubernetes/admin.conf # skip this task if the file already exists
+      register: kube_init
+
+    - name: Show kube init info
+      ansible.builtin.debug:
+        var: kube_init
+
+    - name: Create .kube directory in user home
+      ansible.builtin.file:
+        mode: 0777
+        path: "{{ home_dir }}/.kube"
+        state: directory
+        owner: 1000
+        group: 998 # ubuntu user, docker group
+
+    - name: Configure .kube/config files in user home
+      ansible.builtin.copy:
+        mode: 0777
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ home_dir }}/.kube/config"
+        remote_src: true
+        owner: 1000
+        group: 998
+
+    - name: Restart kubelet for config changes
+      ansible.builtin.service:
+        name: kubelet
+        state: restarted
+
+    - name: Get calico networking
+      ansible.builtin.get_url:
+        mode: 0644
+        url: https://projectcalico.docs.tigera.io/manifests/calico.yaml
+        dest: "{{ home_dir }}/calico.yaml"
+
+    - name: Apply calico networking
+      changed_when: false
+      become: false
+      ansible.builtin.command: kubectl apply -f "{{ home_dir }}/calico.yaml"
+
+    - name: Get dashboard
+      ansible.builtin.get_url:
+        mode: 0644
+        url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
+        dest: "{{ home_dir }}/dashboard.yaml"
+
+    - name: Apply dashboard
+      changed_when: false
+      become: false
+      ansible.builtin.command: kubectl apply -f "{{ home_dir }}/dashboard.yaml"
+
+    - name: Install helm
+      community.general.snap:
+        name: "helm"
+        classic: true

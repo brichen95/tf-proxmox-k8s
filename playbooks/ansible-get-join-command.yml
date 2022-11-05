@@ -1,0 +1,21 @@
+- name: Get k8s join command
+  hosts: kube_server
+  become: false
+  remote_user: ubuntu
+
+  vars_files:
+    - ansible-vars.yml
+
+  tasks:
+    - name: Extract the join command
+      changed_when: false
+      become: true
+      ansible.builtin.command: "kubeadm token create --print-join-command"
+      register: join_command
+
+    - name: Show join command
+      ansible.builtin.debug:
+        var: join_command
+
+    - name: Save kubeadm join command for cluster
+      local_action: copy content={{ join_command.stdout_lines | last | trim }} dest={{ join_command_location }} # defaults to your local cwd/join_command.out
