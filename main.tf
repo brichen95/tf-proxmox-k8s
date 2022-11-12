@@ -34,7 +34,7 @@ resource "proxmox_vm_qemu" "kube-server" {
     slot = 0
     size = var.kube_server_disksize
     type = "scsi"
-    storage = "local-lvm"
+    storage = "local"
     iothread = 1
   }
   network {
@@ -73,7 +73,7 @@ resource "proxmox_vm_qemu" "kube-agent" {
     slot = 0
     size = var.kube_agent_disksize
     type = "scsi"
-    storage = "local-lvm"
+    storage = "local"
     iothread = 1
   }
   network {

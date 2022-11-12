@@ -1,3 +1,6 @@
+# IP of the (insecure/http) local docker registry I'm using to push my private images
+docker_registry_ip: "10.0.1.140:5050"
+
 # specifying a CIDR for our cluster to use.
 # can be basically any private range except for ranges already in use.
 # apparently it isn't too hard to run out of IPs in a /24, so we're using a /22

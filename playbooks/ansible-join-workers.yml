@@ -13,7 +13,8 @@
         dest: "/etc/docker/daemon.json"
         content: |
           {
-            "exec-opts": ["native.cgroupdriver=systemd"]
+            "exec-opts": ["native.cgroupdriver=systemd"],
+            "insecure-registries": ["{{ docker_registry_ip }}"]
           }
     - name: Restart docker
       ansible.builtin.service:
