@@ -16,48 +16,9 @@ provider "proxmox" {
   pm_tls_insecure = true # I don't have proxmox https/SSL set up right
 }
 
-resource "proxmox_vm_qemu" "kube-server" {
-  count = var.kube_server_count
-  name = "kube-server-0${count.index + 1}"
-  target_node = var.proxmox_host
-  vmid = "70${count.index + 1}"
-  clone = var.template_name
-  agent = 1
-  os_type = "cloud-init"
-  cores = 2
-  sockets = 1
-  cpu = "host"
-  memory = var.kube_server_memory
-  scsihw = "virtio-scsi-pci"
-  bootdisk = "scsi0"
-  disk {
-    slot = 0
-    size = var.kube_server_disksize
-    type = "scsi"
-    storage = "local"
-    iothread = 1
-  }
-  network {
-    model = "virtio"
-    bridge = "vmbr0"
-  }
-  network {
-    model = "virtio"
-    bridge = "vmbr17"
-  }
-  lifecycle {
-    ignore_changes = [
-      network,
-    ]
-  }
-  ipconfig0 = "ip=10.0.1.7${count.index + 1}/24,gw=10.0.1.1"
-  ipconfig1 = "ip=10.17.0.7${count.index + 1}/24"
-  sshkeys = var.ssh_key
-}
-
-resource "proxmox_vm_qemu" "kube-agent" {
-  count = var.kube_agent_count
-  name = "kube-agent-0${count.index + 1}"
+resource "proxmox_vm_qemu" "kube-control" {
+  count = var.kube_control_count
+  name = "kube-control-0${count.index + 1}"
   target_node = var.proxmox_host
   vmid = "80${count.index + 1}"
   clone = var.template_name
@@ -66,12 +27,12 @@ resource "proxmox_vm_qemu" "kube-agent" {
   cores = 2
   sockets = 1
   cpu = "host"
-  memory = var.kube_agent_memory
+  memory = var.kube_control_memory
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
   disk {
     slot = 0
-    size = var.kube_agent_disksize
+    size = var.kube_control_disksize
     type = "scsi"
     storage = "local"
     iothread = 1
@@ -89,9 +50,48 @@ resource "proxmox_vm_qemu" "kube-agent" {
       network,
     ]
   }
-  ipconfig0 = "ip=10.0.1.8${count.index + 1}/24,gw=10.0.1.1"
-  ipconfig1 = "ip=10.17.0.8${count.index + 1}/24"
-  sshkeys = var.ssh_key
+  ipconfig0 = "ip=10.0.1.3${count.index + 1}/24,gw=10.0.1.1"
+  ipconfig1 = "ip=10.17.0.3${count.index + 1}/24"
+  sshkeys = join("\n", var.ssh_keys)
+}
+
+resource "proxmox_vm_qemu" "kube-node" {
+  count = var.kube_node_count
+  name = "kube-node-0${count.index + 1}"
+  target_node = var.proxmox_host
+  vmid = "90${count.index + 1}"
+  clone = var.template_name
+  agent = 1
+  os_type = "cloud-init"
+  cores = 2
+  sockets = 1
+  cpu = "host"
+  memory = var.kube_node_memory
+  scsihw = "virtio-scsi-pci"
+  bootdisk = "scsi0"
+  disk {
+    slot = 0
+    size = var.kube_node_disksize
+    type = "scsi"
+    storage = "local"
+    iothread = 1
+  }
+  network {
+    model = "virtio"
+    bridge = "vmbr0"
+  }
+  network {
+    model = "virtio"
+    bridge = "vmbr17"
+  }
+  lifecycle {
+    ignore_changes = [
+      network,
+    ]
+  }
+  ipconfig0 = "ip=10.0.1.4${count.index + 1}/24,gw=10.0.1.1"
+  ipconfig1 = "ip=10.17.0.4${count.index + 1}/24"
+  sshkeys = join("\n", var.ssh_keys)
 }
 
 # resource "proxmox_vm_qemu" "kube-storage" {
@@ -130,5 +130,5 @@ resource "proxmox_vm_qemu" "kube-agent" {
 #   }
 #   ipconfig0 = "ip=10.0.1.9${count.index + 1}/24,gw=10.0.1.1"
 #   ipconfig1 = "ip=10.17.0.9${count.index + 1}/24"
-#   sshkeys = var.ssh_key
+#   sshkeys = join("\n", var.ssh_keys)
 # }
