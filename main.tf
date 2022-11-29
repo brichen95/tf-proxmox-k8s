@@ -4,7 +4,7 @@ terraform {
   required_providers {
     proxmox = {
       source = "telmate/proxmox"
-      version = "2.9.8"
+      version = "2.9.11"
     }
   }
 }
@@ -35,7 +35,7 @@ resource "proxmox_vm_qemu" "kube-control" {
     size = var.kube_control_disksize
     type = "scsi"
     storage = "local"
-    iothread = 1
+    iothread = 0
   }
   network {
     model = "virtio"
@@ -74,7 +74,7 @@ resource "proxmox_vm_qemu" "kube-node" {
     size = var.kube_node_disksize
     type = "scsi"
     storage = "local"
-    iothread = 1
+    iothread = 0
   }
   network {
     model = "virtio"
