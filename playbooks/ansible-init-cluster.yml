@@ -63,17 +63,6 @@
       become: false
       ansible.builtin.command: kubectl apply -f "{{ home_dir }}/calico.yaml"
 
-    - name: Get dashboard
-      ansible.builtin.get_url:
-        mode: 0644
-        url: https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.0/aio/deploy/recommended.yaml
-        dest: "{{ home_dir }}/dashboard.yaml"
-
-    - name: Apply dashboard
-      changed_when: false
-      become: false
-      ansible.builtin.command: kubectl apply -f "{{ home_dir }}/dashboard.yaml"
-
     - name: Install helm
       community.general.snap:
         name: "helm"
