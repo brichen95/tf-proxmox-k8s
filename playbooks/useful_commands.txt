@@ -1,3 +1,0 @@
-# Ping hosts inside the "all" module in ansible-hosts.txt using user 'ubuntu'
-ansible -i ansible-hosts.txt all -u ubuntu -m ping
-

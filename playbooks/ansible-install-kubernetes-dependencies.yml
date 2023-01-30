@@ -22,6 +22,7 @@
         - curl
         - gnupg-agent
         - software-properties-common
+        - nfs-common
 
   - name: Add an apt signing key for Docker
     ansible.builtin.apt_key:
